@@ -4,3 +4,12 @@ __pycache__
 *.egg-info
 ./output/
 pretrained
+CVPR2024_DiffuScene/
+build/
+*.egg
+
+cluster/
+3d_front_processed/
+3D-FUTURE-model/
+
+pretrained/
