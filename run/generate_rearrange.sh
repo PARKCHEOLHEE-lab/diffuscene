@@ -17,7 +17,7 @@ xvfb-run -a python completion_rearrange.py \
     $threed_future \
     --weight_file $weight_file \
     --without_screen \
-    --n_sequences 1 \
+    --n_sequences 1000 \
     --render_top2down \
     --no_texture \
     --without_floor \
