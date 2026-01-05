@@ -1,0 +1,2 @@
+# downloads all provided files including pretrained models, preprocessed dataset, etc. (https://drive.google.com/drive/folders/1EhvyNCAWWto6vMt0vXWMKBoSdYR_9pC2) 
+gdown --folder 1EhvyNCAWWto6vMt0vXWMKBoSdYR_9pC2
