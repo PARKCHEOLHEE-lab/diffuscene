@@ -24,14 +24,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN git config --global user.name "PARKCHEOLHEE-lab" && \
-    git config --global user.email "qhqhahah@naver.com"
-
-RUN mkdir -p ~/.ssh && \
-    chmod 700 ~/.ssh && \
-    ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null || true
-
-
 # PyTorch 1.13.0 및 관련 패키지 설치
 RUN python3 -m pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir --upgrade importlib-metadata
