@@ -204,54 +204,83 @@ class ThreedFutureModel(BaseThreedFutureModel):
 
     @property
     def raw_model_path(self):
-        return os.path.join(
+
+        path = os.path.join(
             self.path_to_models,
             self.model_jid,
             "raw_model.obj"
         )
+        
+        if path[0] == "/":
+            path = "." + path
+
+        return path
 
     # add normalized point cloud of raw_model
     @property
     def raw_model_norm_pc_path(self):
-        return os.path.join(
+        path = os.path.join(
             self.path_to_models,
             self.model_jid,
             "raw_model_norm_pc.npz"
         )
+        
+        if path[0] == "/":
+            path = "." + path
+
+        return path
 
     @property
     def raw_model_norm_pc_lat_path(self):
-        return os.path.join(
+        path = os.path.join(
             self.path_to_models,
             self.model_jid,
             "raw_model_norm_pc_lat.npz"
         )
+        
+        if path[0] == "/":
+            path = "." + path
+
+        return path
 
     @property
     def raw_model_norm_pc_lat32_path(self):
-        return os.path.join(
+        path = os.path.join(
             self.path_to_models,
             self.model_jid,
             "raw_model_norm_pc_lat32.npz"
         )
-    
 
+        if path[0] == "/":
+            path = "." + path
+
+        return path 
 
     @property
     def texture_image_path(self):
-        return os.path.join(
+        path = os.path.join(
             self.path_to_models,
             self.model_jid,
             "texture.png"
         )
 
+        if path[0] == "/":
+            path = "." + path
+
+        return path
+
     @property
     def path_to_bbox_vertices(self):
-        return os.path.join(
+        path = os.path.join(
             self.path_to_models,
             self.model_jid,
             "bbox_vertices.npy"
         )
+        
+        if path[0] == "/":
+            path = "." + path
+
+        return path
 
     # add normalized point cloud of raw_model
     def raw_model_norm_pc(self):

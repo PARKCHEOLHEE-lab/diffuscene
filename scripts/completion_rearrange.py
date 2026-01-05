@@ -514,7 +514,7 @@ def main(argv):
             if config["network"].get("objectness_dim", 0) >0:
                 bbox_params["objectness"] = torch.from_numpy(samples["objectness"])[None, :, ...]
             if config["network"].get("objfeat_dim", 0) >0:
-                if config["netowrk"]["objfeat_dim"] == 32:
+                if config["network"]["objfeat_dim"] == 32:
                     bbox_params["objfeats"] = torch.from_numpy(samples["objfeats_32"])[None, :, ...]
                 else:
                     bbox_params["objfeats"] = torch.from_numpy(samples["objfeats"])[None, :, ...]

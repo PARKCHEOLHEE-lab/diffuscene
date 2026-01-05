@@ -27,6 +27,9 @@ Next compile the extension modules. You can do this via
 ```
 python setup.py build_ext --inplace
 pip install -e .
+
+
+pip install -e . --config-settings editable_mode=compat
 ```
 
 Install ChamferDistancePytorch
