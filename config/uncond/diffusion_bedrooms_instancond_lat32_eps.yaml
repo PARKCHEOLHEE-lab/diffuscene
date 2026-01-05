@@ -85,7 +85,7 @@ validation:
     batch_size: 128
     gen_traj: false
     num_step: 100
-    gen_gt: false
+    gen_gt: true
     gen_prob_map: false
 
 logger:

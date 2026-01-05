@@ -1,7 +1,7 @@
 data:
     dataset_type: "cached_threedfront"
     encoding_type: "cached_diffusion_cosin_angle_wocm"
-    dataset_directory: "/cluster/balrog/jtang/3d_front_processed/bedrooms"
+    dataset_directory: "./cluster/balrog/jtang/3d_front_processed/bedrooms"
     annotation_file: "../config/bedroom_threed_front_splits.csv"
     path_to_invalid_scene_ids: "../config/invalid_threed_front_rooms.txt"
     path_to_invalid_bbox_jids: "../config/black_list.txt"
@@ -11,9 +11,9 @@ data:
     train_stats: "dataset_stats.txt"
     room_layout_size: "64,64"
     # for object autoencoder
-    path_to_3d_front_dataset_directory: "/cluster/balrog/jtang/3D-FRONT/"
-    path_to_3d_future_dataset_directory: "/cluster/balrog/jtang/3D-FUTURE-model/"
-    path_to_model_info: "/cluster/balrog/jtang/3D-FUTURE-model/model_info.json"
+    path_to_3d_front_dataset_directory: "./cluster/balrog/jtang/3D-FRONT/"
+    path_to_3d_future_dataset_directory: "./cluster/balrog/jtang/3D-FUTURE-model/"
+    path_to_model_info: "./cluster/balrog/jtang/3D-FUTURE-model/model_info.json"
     without_lamps: false
 
 network:
@@ -63,7 +63,7 @@ validation:
     batch_size: 16
     gen_traj: false
     num_step: 100
-    gen_gt: false
+    gen_gt: true
 
 logger:
     type: "wandb"

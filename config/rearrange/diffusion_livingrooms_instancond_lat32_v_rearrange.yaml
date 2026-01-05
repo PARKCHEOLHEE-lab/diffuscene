@@ -1,7 +1,7 @@
 data:
     dataset_type: "cached_threedfront"
     encoding_type: "cached_diffusion_cosin_angle_objfeatsnorm_lat32_wocm" #"_no_prm"
-    dataset_directory: "/cluster/balrog/jtang/3d_front_processed/livingrooms_objfeats_32_64"
+    dataset_directory: "./cluster/balrog/jtang/3d_front_processed/livingrooms_objfeats_32_64"
     annotation_file: "../config/livingroom_threed_front_splits.csv"
     path_to_invalid_scene_ids: "../config/invalid_threed_front_rooms.txt"
     path_to_invalid_bbox_jids: "../config/black_list.txt"
@@ -51,7 +51,7 @@ network:
         loss_separate: true
         # calculate iou loss
         loss_iou: true
-        train_stats_file: /cluster/balrog/jtang/3d_front_processed/livingrooms_objfeats_32_64/dataset_stats.txt
+        train_stats_file: ./cluster/balrog/jtang/3d_front_processed/livingrooms_objfeats_32_64/dataset_stats.txt
 
     net_kwargs:
         dim: 512
@@ -95,7 +95,7 @@ validation:
     batch_size: 128
     gen_traj: false
     num_step: 100
-    gen_gt: false
+    gen_gt: true
     gen_prob_map: false
 
 logger:
