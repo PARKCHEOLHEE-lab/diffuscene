@@ -193,6 +193,9 @@ def main(argv):
     # Check if output directory exists and if it doesn't create it
     if not os.path.exists(args.output_directory):
         os.makedirs(args.output_directory)
+    
+    generated_directory = os.path.join(args.output_directory, "generated")
+    os.makedirs(generated_directory, exist_ok=True)
 
     config = load_config(args.config_file)
 
@@ -467,7 +470,7 @@ def main(argv):
            
         # Specify the path of the rendered image
         path_to_image = "{}/{}_{}_{:03d}.png".format(
-            args.output_directory,
+            generated_directory,
             current_scene.scene_id,
             scene_idx,
             i
@@ -489,7 +492,7 @@ def main(argv):
             scene_top2down,
             path_to_image,
             path_to_objs,
-            "{}_{}_{:03d}".format(current_scene.scene_id,  scene_idx, i),
+            f"{current_scene.scene_id}_{scene_idx}_{i:03d}",
             network_objae=None,
             device=device,
             diffusion=True,
