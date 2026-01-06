@@ -59,7 +59,7 @@ def main(argv):
     )
     parser.add_argument(
         "--n_rearrange_times",
-        default=3,
+        default=1,
         type=int,
         help="The number of times to rearrange the scene"
     )
@@ -177,7 +177,10 @@ def main(argv):
         action="store_true",
         help="if remove the texture"
     )
-
+    parser.add_argument(
+        "--use_test_dataset",
+        type=str,
+    )
 
     args = parser.parse_args(argv)
 
@@ -208,31 +211,36 @@ def main(argv):
         print('NO PERM AUG in test')
         config["data"]["encoding_type"] = config["data"]["encoding_type"] + "_no_prm"
     print('encoding type :', config["data"]["encoding_type"])
-    ####### 
-    raw_dataset, train_dataset = get_dataset_raw_and_encoded(
-        config["data"],
-        filter_fn=filter_function(
+    #######
+    
+    assert args.use_test_dataset in ['true', 'false']
+    args.use_test_dataset = args.use_test_dataset == 'true'
+    
+    if args.use_test_dataset:
+        raw_dataset, dataset = get_dataset_raw_and_encoded(
             config["data"],
+            filter_fn=filter_function(
+                config["data"],
+                split=config["validation"].get("splits", ["test"])
+            ),
+            split=config["validation"].get("splits", ["test"])
+        )
+    else:
+        raw_dataset, dataset = get_dataset_raw_and_encoded(
+            config["data"],
+            filter_fn=filter_function(
+                config["data"],
+                split=config["training"].get("splits", ["train", "val"])
+            ),
             split=config["training"].get("splits", ["train", "val"])
-        ),
-        split=config["training"].get("splits", ["train", "val"])
-    )
-
+        )
+        
     # Build the dataset of 3D models
     objects_dataset = ThreedFutureDataset.from_pickled_dataset(
         args.path_to_pickled_3d_futute_models
     )
     print("Loaded {} 3D-FUTURE models".format(len(objects_dataset)))
-
-
-    raw_dataset, dataset = get_dataset_raw_and_encoded(
-        config["data"],
-        filter_fn=filter_function(
-            config["data"],
-            split=config["validation"].get("splits", ["test"])
-        ),
-        split=config["validation"].get("splits", ["test"])
-    )
+    
     print("Loaded {} scenes with {} object types:".format(
         len(dataset), dataset.n_object_types)
     )

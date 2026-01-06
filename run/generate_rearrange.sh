@@ -18,7 +18,7 @@ xvfb-run -a python completion_rearrange.py \
     $threed_future \
     --weight_file $weight_file \
     --without_screen \
-    --n_rearrange_times 3 \
+    --n_rearrange_times 1 \
     --render_top2down \
     --no_texture \
     --without_floor \
@@ -26,7 +26,8 @@ xvfb-run -a python completion_rearrange.py \
     --clip_denoised \
     --retrive_objfeats \
     --arrange_objects \
-    --compute_intersec
+    --compute_intersec \
+    --use_test_dataset=false
 
 # ####'livingrooms'
 # config="../config/rearrange/diffusion_livingrooms_instancond_lat32_v_rearrange.yaml"
@@ -41,7 +42,7 @@ xvfb-run -a python completion_rearrange.py \
 #     $threed_future \
 #     --weight_file $weight_file \
 #     --without_screen \
-#     --n_rearrange_times 3 \
+#     --n_rearrange_times 1 \
 #     --render_top2down \
 #     --no_texture \
 #     --without_floor \
@@ -49,4 +50,5 @@ xvfb-run -a python completion_rearrange.py \
 #     --clip_denoised \
 #     --retrive_objfeats \
 #     --arrange_objects \
-#     --compute_intersec
+#     --compute_intersec \
+#     --use_test_dataset=false
