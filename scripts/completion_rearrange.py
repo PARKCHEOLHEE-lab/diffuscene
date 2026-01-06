@@ -58,10 +58,10 @@ def main(argv):
         help="Path to a pretrained model"
     )
     parser.add_argument(
-        "--n_sequences",
-        default=10,
+        "--n_rearrange_times",
+        default=3,
         type=int,
-        help="The number of sequences to be generated"
+        help="The number of times to rearrange the scene"
     )
     parser.add_argument(
         "--background",
@@ -287,6 +287,8 @@ def main(argv):
         BOX_IOU_ONLYSIZE = AverageAggregator()
         BOX_INSEC_ONLYSIZE= AverageAggregator()
         OVERLAP_RATIO_ONLYSIZE = AverageAggregator()
+    
+    args.n_sequences = len(dataset) * args.n_rearrange_times
 
     classes = np.array(dataset.class_labels)
     print('class labels:', classes, len(classes))
