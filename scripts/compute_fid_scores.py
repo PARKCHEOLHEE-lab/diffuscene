@@ -56,6 +56,10 @@ def main(argv):
         help="Path to the folder containing the annotations"
     )
     parser.add_argument(
+        "path_to_train_stats",
+        help="Path to the train stats"
+    )
+    parser.add_argument(
         "--compare_all",
         action="store_true",
         help="if compare all"
@@ -64,26 +68,48 @@ def main(argv):
     args = parser.parse_args(argv)
 
     # Create Real datasets
-    config = dict(
-        train_stats="dataset_stats.txt",
-        room_layout_size="256,256"
-    )
-    splits_builder = CSVSplitsBuilder(args.path_to_annotations)
-    if args.compare_all:
-        test_real = ThreedFrontRenderDataset(CachedThreedFront(
-            args.path_to_real_renderings,
-            config=config,
-            scene_ids=splits_builder.get_splits(["train", "val", "test"])
-        ))
-    else:
-        test_real = ThreedFrontRenderDataset(CachedThreedFront(
-            args.path_to_real_renderings,
-            config=config,
-            scene_ids=splits_builder.get_splits(["train", "val"])
-        ))
+    # config = dict(
+    #     train_stats=args.path_to_train_stats,
+    #     room_layout_size="256,256"
+    # )
+    
+    # splits_builder = CSVSplitsBuilder(args.path_to_annotations)
+    # if args.compare_all:
+    #     test_real = ThreedFrontRenderDataset(CachedThreedFront(
+    #         args.path_to_real_renderings,
+    #         config=config,
+    #         scene_ids=splits_builder.get_splits(["train", "val", "test"]),
+    #     ))
+    # else:
+    #     test_real = ThreedFrontRenderDataset(CachedThreedFront(
+    #         args.path_to_real_renderings,
+    #         config=config,
+    #         scene_ids=splits_builder.get_splits(["train", "val"]),
+    #     ))
+    
+    class Image:
+        def __init__(self, image_path):
+            self.image_path = image_path
 
+        def __repr__(self):
+            return self.image_path
+    
+    # groundtruth
+    test_real_dataset = [
+        Image(image_path=os.path.join(args.path_to_real_renderings, real)) 
+        for real in os.listdir(args.path_to_real_renderings) 
+        if real.endswith(".png")
+    ]
+    
+    # sort groudtruth images by basename to match the synthesized images order
+    test_real_dataset = sorted(test_real_dataset, key=lambda x: os.path.basename(x.image_path))
+
+    test_real = ThreedFrontRenderDataset(
+        dataset=test_real_dataset
+    )
+    
     print("Generating temporary a folder with test_real images...")
-    path_to_test_real = "/cluster/balrog/jtang/ATISS_exps/test_real/" # /tmp/test_real
+    path_to_test_real = "./cluster/balrog/jtang/ATISS_exps/test_real/" # /tmp/test_real
     if not os.path.exists(path_to_test_real):
         os.makedirs(path_to_test_real)
     for i, di in enumerate(test_real):
@@ -93,17 +119,24 @@ def main(argv):
     print('number of synthesized images :', len(test_real))
 
     print("Generating temporary a folder with test_fake images...")
-    path_to_test_fake = "/cluster/balrog/jtang/ATISS_exps/test_fake/" #/tmp/test_fake/
+    path_to_test_fake = "./cluster/balrog/jtang/ATISS_exps/test_fake/" #/tmp/test_fake/
     if not os.path.exists(path_to_test_fake):
         os.makedirs(path_to_test_fake)
 
-    synthesized_images = [
-        os.path.join(args.path_to_synthesized_renderings, oi)
-        for oi in os.listdir(args.path_to_synthesized_renderings)
-        if oi.endswith(".png")
-    ]
+    synthesized_images = [os.path.join(args.path_to_synthesized_renderings, oi) for oi in os.listdir(args.path_to_synthesized_renderings) if oi.endswith(".png")]
     print('number of synthesized images :', len(synthesized_images))
-
+    
+    # sort synthesized images by basename to match the groudtruth images order
+    synthesized_images = sorted(synthesized_images, key=lambda x: os.path.basename(x))
+    
+    for real, synthesized in zip(test_real_dataset, synthesized_images):
+        
+        basename_real = os.path.basename(real.image_path).replace("_render", "")
+        basename_synthesized = os.path.basename(synthesized)
+        
+        # check if the basename is the same
+        assert basename_real == basename_synthesized
+        
     scores = []
     scores2 = []
     for i, fi in enumerate(synthesized_images):
@@ -119,7 +152,15 @@ def main(argv):
 
 
 if __name__ == "__main__":
-    main(None)
+    main(sys.argv[1:])
+    
+    '''
+        python compute_fid_scores.py \
+            ./cluster/balrog/jtang/_rearrange/bedrooms_rearrange/gen_top2down_notexture_nofloor/groundtruth \
+            ./cluster/balrog/jtang/_rearrange/bedrooms_rearrange/gen_top2down_notexture_nofloor/generated \
+            ../config/bedroom_threed_front_splits.csv \
+            ./cluster/balrog/jtang/3d_front_processed/bedrooms_objfeats_32_64/dataset_stats.txt
+    '''
 
 # python compute_fid_scores.py /cluster/balrog/jtang/3d_front_processed/bedrooms_notexture_nofloor_whiteground/ /cluster/balrog/jtang/ATISS_exps/diffusion_bedrooms_objfeats_lat32_v/gen_clip_24000/ ../config/bedroom_threed_front_splits.csv
 # python compute_fid_scores.py /cluster/balrog/jtang/3d_front_processed/livingrooms_notexture_nofloor_whiteground/ /cluster/balrog/jtang/ATISS_exps/diffusion_livingrooms_permaug_fixedrotaug_unet1d_dim512_nomask_instancond_cosinangle_ddpm_separateclsbbox/gen_top2down_notexture_nofloor-58000/ ../config/livingroom_threed_front_splits.csv 
