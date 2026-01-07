@@ -145,8 +145,8 @@ def main(argv):
     # Compute the FID score
     fid_score = fid.compute_fid(path_to_test_real, path_to_test_fake, device=torch.device("cpu"))
     print('fid score:', fid_score)
-    kid_score = fid.compute_kid(path_to_test_real, path_to_test_fake, device=torch.device("cpu"))
-    print('kid score:', kid_score)
+    # kid_score = fid.compute_kid(path_to_test_real, path_to_test_fake, device=torch.device("cpu"))
+    # print('kid score:', kid_score)
     os.system('rm -r %s'%path_to_test_real)
     os.system('rm -r %s'%path_to_test_fake)
 
