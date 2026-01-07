@@ -382,7 +382,10 @@ class CachedThreedFront(ThreedFront):
         )
 
     def _parse_train_stats(self, train_stats):
-        with open(os.path.join(self._base_dir, train_stats), "r") as f:
+        if train_stats == "dataset_stats.txt":
+            train_stats = os.path.join(self._base_dir, train_stats)
+            
+        with open(train_stats, "r") as f:
             train_stats = json.load(f)
         self._centroids = train_stats["bounds_translations"]
         self._centroids = (
