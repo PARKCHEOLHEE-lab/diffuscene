@@ -51,19 +51,19 @@ def main(argv):
         "path_to_synthesized_renderings",
         help="Path to the folder containing the synthesized"
     )
-    parser.add_argument(
-        "path_to_annotations",
-        help="Path to the folder containing the annotations"
-    )
-    parser.add_argument(
-        "path_to_train_stats",
-        help="Path to the train stats"
-    )
-    parser.add_argument(
-        "--compare_all",
-        action="store_true",
-        help="if compare all"
-    )
+    # parser.add_argument(
+    #     "path_to_annotations",
+    #     help="Path to the folder containing the annotations"
+    # )
+    # parser.add_argument(
+    #     "path_to_train_stats",
+    #     help="Path to the train stats"
+    # )
+    # parser.add_argument(
+    #     "--compare_all",
+    #     action="store_true",
+    #     help="if compare all"
+    # )
 
     args = parser.parse_args(argv)
 
@@ -156,10 +156,8 @@ if __name__ == "__main__":
     
     '''
         python compute_fid_scores.py \
-            ./cluster/balrog/jtang/_rearrange/bedrooms_rearrange/gen_top2down_notexture_nofloor/groundtruth \
-            ./cluster/balrog/jtang/_rearrange/bedrooms_rearrange/gen_top2down_notexture_nofloor/generated \
-            ../config/bedroom_threed_front_splits.csv \
-            ./cluster/balrog/jtang/3d_front_processed/bedrooms_objfeats_32_64/dataset_stats.txt
+            ./cluster/balrog/jtang/rearrange_with_train_val_data_copied/bedrooms_rearrange/gen_top2down_notexture_nofloor/groundtruth \
+            ./cluster/balrog/jtang/rearrange_with_train_val_data_copied/bedrooms_rearrange/gen_top2down_notexture_nofloor/generated
     '''
 
 # python compute_fid_scores.py /cluster/balrog/jtang/3d_front_processed/bedrooms_notexture_nofloor_whiteground/ /cluster/balrog/jtang/ATISS_exps/diffusion_bedrooms_objfeats_lat32_v/gen_clip_24000/ ../config/bedroom_threed_front_splits.csv
