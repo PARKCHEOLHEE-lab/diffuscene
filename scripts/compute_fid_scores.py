@@ -116,7 +116,7 @@ def main(argv):
         di.save("{}/{:05d}.png".format(path_to_test_real, i))
     # Number of images to be copied
     N = len(test_real)
-    print('number of synthesized images :', len(test_real))
+    print('number of real images :', len(test_real))
 
     print("Generating temporary a folder with test_fake images...")
     path_to_test_fake = "./cluster/balrog/jtang/ATISS_exps/test_fake/" #/tmp/test_fake/
