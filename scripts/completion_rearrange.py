@@ -1,4 +1,5 @@
 """Script to perform scene completion and rearrangement."""
+import ast
 import argparse
 import logging
 import os
@@ -178,12 +179,25 @@ def main(argv):
         help="if remove the texture"
     )
     parser.add_argument(
-        "--use_test_dataset",
+        "--split",
         type=str,
+        default="['train', 'val']",
+    ),
+    parser.add_argument(
+        "--render_gt",
+        type=str
     )
 
     args = parser.parse_args(argv)
-
+    
+    # convert string boolean to python boolean 
+    assert args.render_gt in ['true', 'false']
+    args.render_gt = args.render_gt == 'true'
+   
+    # convert string list to python list
+    args.split = ast.literal_eval(args.split)
+    assert all(s in ['train', 'val', 'test'] for s in args.split)
+    
     # Disable trimesh's logger
     logging.getLogger("trimesh").setLevel(logging.ERROR)
 
@@ -213,27 +227,33 @@ def main(argv):
     print('encoding type :', config["data"]["encoding_type"])
     #######
     
-    assert args.use_test_dataset in ['true', 'false']
-    args.use_test_dataset = args.use_test_dataset == 'true'
-    
-    if args.use_test_dataset:
-        raw_dataset, dataset = get_dataset_raw_and_encoded(
+    raw_dataset, dataset = get_dataset_raw_and_encoded(
+        config["data"],
+        filter_fn=filter_function(
             config["data"],
-            filter_fn=filter_function(
-                config["data"],
-                split=config["validation"].get("splits", ["test"])
-            ),
-            split=config["validation"].get("splits", ["test"])
-        )
-    else:
-        raw_dataset, dataset = get_dataset_raw_and_encoded(
-            config["data"],
-            filter_fn=filter_function(
-                config["data"],
-                split=config["training"].get("splits", ["train", "val"])
-            ),
-            split=config["training"].get("splits", ["train", "val"])
-        )
+            split=args.split
+        ),
+        split=args.split
+    )
+
+    # if args.use_test_dataset:
+    #     raw_dataset, dataset = get_dataset_raw_and_encoded(
+    #         config["data"],
+    #         filter_fn=filter_function(
+    #             config["data"],
+    #             split=config["validation"].get("splits", ["test"])
+    #         ),
+    #         split=config["validation"].get("splits", ["test"])
+    #     )
+    # else:
+    #     raw_dataset, dataset = get_dataset_raw_and_encoded(
+    #         config["data"],
+    #         filter_fn=filter_function(
+    #             config["data"],
+    #             split=config["training"].get("splits", ["train", "val"])
+    #         ),
+    #         split=config["training"].get("splits", ["train", "val"])
+    #     )
         
     # Build the dataset of 3D models
     objects_dataset = ThreedFutureDataset.from_pickled_dataset(
@@ -535,20 +555,21 @@ def main(argv):
             bbox_params = network.delete_empty_boxes(bbox_params, device=device)
 
             # Render the ground-truth scene
-            render_to_folder(
-                args,
-                "groundtruth",
-               "{}_{}_{:03d}".format(current_scene.scene_id,  scene_idx, i),
-                dataset,
-                objects_dataset,
-                tr_floor,
-                floor_plan,
-                scene,
-                scene_top2down,
-                bbox_params,
-                add_start_end=False,
-                diffusion=True,
-            )
+            if args.render_gt:
+                render_to_folder(
+                    args,
+                    "groundtruth",
+                "{}_{}_{:03d}".format(current_scene.scene_id,  scene_idx, i),
+                    dataset,
+                    objects_dataset,
+                    tr_floor,
+                    floor_plan,
+                    scene,
+                    scene_top2down,
+                    bbox_params,
+                    add_start_end=False,
+                    diffusion=True,
+                )
 
 
 if __name__ == "__main__":
