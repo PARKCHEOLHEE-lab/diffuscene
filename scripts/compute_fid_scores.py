@@ -156,8 +156,8 @@ if __name__ == "__main__":
     
     '''
         python compute_fid_scores.py \
-            ./cluster/balrog/jtang/rearrange_with_train_val_data_copied/bedrooms_rearrange/gen_top2down_notexture_nofloor/groundtruth \
-            ./cluster/balrog/jtang/rearrange_with_train_val_data_copied/bedrooms_rearrange/gen_top2down_notexture_nofloor/generated
+            ./cluster/balrog/jtang/rearrange_with_train_val_data/bedrooms_rearrange/gen_top2down_notexture_nofloor/groundtruth \
+            ./cluster/balrog/jtang/rearrange_with_train_val_data/bedrooms_rearrange/gen_top2down_notexture_nofloor/generated
     '''
 
 # python compute_fid_scores.py /cluster/balrog/jtang/3d_front_processed/bedrooms_notexture_nofloor_whiteground/ /cluster/balrog/jtang/ATISS_exps/diffusion_bedrooms_objfeats_lat32_v/gen_clip_24000/ ../config/bedroom_threed_front_splits.csv
