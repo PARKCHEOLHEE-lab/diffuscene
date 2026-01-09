@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     openssh-server \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -52,7 +53,6 @@ RUN pip install --no-cache-dir \
     einops_exts \
     seaborn \
     clean-fid \
-    unzip \
     gdown
 
 RUN pip install --no-cache-dir open3d
