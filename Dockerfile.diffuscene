@@ -4,7 +4,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
 
-# Python 및 기본 도구 설치
 RUN apt-get update && apt-get install -y \
     python3.9 \
     python3-pip \
@@ -20,12 +19,10 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     openssh-server \
-    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# PyTorch 1.13.0 및 관련 패키지 설치
 RUN python3 -m pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir --upgrade importlib-metadata
 RUN pip install --no-cache-dir \
@@ -34,7 +31,6 @@ RUN pip install --no-cache-dir \
     torchaudio==0.13.0+cu116 \
     --extra-index-url https://download.pytorch.org/whl/cu116
 
-# 나머지 의존성 설치 (기존과 동일)
 RUN pip install --no-cache-dir \
     torchtext==0.14.0 \
     scipy==1.8.1 \
@@ -43,16 +39,16 @@ RUN pip install --no-cache-dir \
     kornia==0.6.9 \
     simple-3dviz \
     transformers==4.25.1 \
-    clip==0.2.0 \
     pyvista==0.43.3 \
     trimesh==3.12.7 \
     wandb==0.18.0 \
+    openai-clip==1.0.1 \
+    clean-fid \
     pillow \
     num2words \
     nltk \
     einops_exts \
     seaborn \
-    clean-fid \
     gdown
 
 RUN pip install --no-cache-dir open3d
