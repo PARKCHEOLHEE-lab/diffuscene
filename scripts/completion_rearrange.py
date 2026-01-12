@@ -559,7 +559,7 @@ def main(argv):
                 render_to_folder(
                     args,
                     "groundtruth",
-                "{}_{}_{:03d}".format(current_scene.scene_id,  scene_idx, i),
+                    "{}_{}_{:03d}".format(current_scene.scene_id,  scene_idx, i),
                     dataset,
                     objects_dataset,
                     tr_floor,
