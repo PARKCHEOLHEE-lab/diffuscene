@@ -8,6 +8,8 @@ CVPR2024_DiffuScene/
 build/
 *.egg
 *.out
+*.log
+*.zip
 
 cluster/
 3d_front_processed/
