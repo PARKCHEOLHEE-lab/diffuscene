@@ -11,11 +11,15 @@
 import argparse
 import os
 import sys
-
 import torch
+import clip
+
+from torchvision.models import inception_v3, Inception_V3_Weights
+from torchvision import transforms
 
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 from cleanfid import fid
 
@@ -36,6 +40,26 @@ class ThreedFrontRenderDataset(object):
         image_path = self.dataset[idx].image_path
         img = Image.open(image_path)
         return img
+    
+    
+# Dummy class
+class DummyImage:
+    def __init__(self, image_path):
+        self.image_path = image_path
+
+    def __repr__(self):
+        return self.image_path
+    
+    def numpy(self):
+        return np.array(self.pil())
+    
+    def pil(self):
+        return Image.open(self.image_path)
+    
+    def rotate(self, angle: float):
+        image = Image.open(self.image_path)
+        rotated = image.rotate(angle)
+        return rotated
 
 
 def main(argv):
@@ -50,6 +74,15 @@ def main(argv):
     parser.add_argument(
         "path_to_synthesized_renderings",
         help="Path to the folder containing the synthesized"
+    )
+    parser.add_argument(
+        "--feature_extractor",
+        default="clip",
+        help="Choose the feature extractor to compute the FID score (clip or inception)"  
+    ),
+    parser.add_argument(
+        "--check_global_rotation",
+        default="false",
     )
     # parser.add_argument(
     #     "path_to_annotations",
@@ -87,16 +120,15 @@ def main(argv):
     #         scene_ids=splits_builder.get_splits(["train", "val"]),
     #     ))
     
-    class Image:
-        def __init__(self, image_path):
-            self.image_path = image_path
-
-        def __repr__(self):
-            return self.image_path
+    assert args.check_global_rotation in ("true", "false")
+    args.check_global_rotation = args.check_global_rotation == "true"
+    
+    assert args.feature_extractor in ("clip", "inception")
+    args.feature_extractor = "clip_vit_b_32" if args.feature_extractor == "clip" else "inception_v3"
     
     # groundtruth
     test_real_dataset = [
-        Image(image_path=os.path.join(args.path_to_real_renderings, real)) 
+        DummyImage(image_path=os.path.join(args.path_to_real_renderings, real)) 
         for real in os.listdir(args.path_to_real_renderings) 
         if real.endswith(".png")
     ]
@@ -109,46 +141,122 @@ def main(argv):
     )
     
     print("Generating temporary a folder with test_real images...")
-    path_to_test_real = "./cluster/balrog/jtang/ATISS_exps/test_real/" # /tmp/test_real
+    base_path = "./cluster/balrog/jtang/ATISS_exps"
+    
+    if os.path.exists(base_path):
+        os.system(f"rm -r {base_path}")
+
+    path_to_test_real = os.path.join(base_path, "test_real") # /tmp/test_real
     if not os.path.exists(path_to_test_real):
         os.makedirs(path_to_test_real)
     for i, di in enumerate(test_real):
-        di.save("{}/{:05d}.png".format(path_to_test_real, i))
+        di.save(os.path.join(path_to_test_real, f"{i:05d}.png"))
     # Number of images to be copied
     N = len(test_real)
     print('number of real images :', len(test_real))
 
     print("Generating temporary a folder with test_fake images...")
-    path_to_test_fake = "./cluster/balrog/jtang/ATISS_exps/test_fake/" #/tmp/test_fake/
+    path_to_test_fake = os.path.join(base_path, "test_fake") #/tmp/test_fake/
     if not os.path.exists(path_to_test_fake):
         os.makedirs(path_to_test_fake)
 
-    synthesized_images = [os.path.join(args.path_to_synthesized_renderings, oi) for oi in os.listdir(args.path_to_synthesized_renderings) if oi.endswith(".png")]
+    synthesized_images = [
+        DummyImage(image_path=os.path.join(args.path_to_synthesized_renderings, oi)) 
+        for oi in os.listdir(args.path_to_synthesized_renderings) 
+        if oi.endswith(".png")
+    ]
     print('number of synthesized images :', len(synthesized_images))
     
     # sort synthesized images by basename to match the groudtruth images order
-    synthesized_images = sorted(synthesized_images, key=lambda x: os.path.basename(x))
+    synthesized_images = sorted(synthesized_images, key=lambda x: os.path.basename(x.image_path))
     
     for real, synthesized in zip(test_real_dataset, synthesized_images):
-        
+
         basename_real = os.path.basename(real.image_path).replace("_render", "")
-        basename_synthesized = os.path.basename(synthesized)
+        basename_synthesized = os.path.basename(synthesized.image_path)
         
         # check if the basename is the same
         assert basename_real == basename_synthesized
         
-    scores = []
-    scores2 = []
-    for i, fi in enumerate(synthesized_images):
-        shutil.copyfile(fi, "{}/{:05d}.png".format(path_to_test_fake, i))
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if args.check_global_rotation:
+        
+        # feature_extractor = clip.load("ViT-B/32", device=device)
+        
+        if "inception" in args.feature_extractor:
+            feature_extractor = inception_v3(weights=Inception_V3_Weights.DEFAULT)
+            feature_extractor = feature_extractor.to(device)
+            feature_extractor.eval()
+            
+            preprocessor = transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                    transforms.Resize([299, 299]),
+                    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # ImageNet normalization
+                ]
+            )
+        
+        elif "clip" in args.feature_extractor:
+            feature_extractor, preprocessor = clip.load("ViT-B/32", device=device)
+            feature_extractor = feature_extractor.to(device)
+            feature_extractor.eval()
+            
+        synthesized_images_all_features = []
+        synthesized_images_all_pil = []
+        real_images_all = []
+        for real_image, synthesized_image in tqdm(
+            zip(test_real_dataset, synthesized_images), total=len(test_real_dataset)
+        ):
+            synthesized_images_rotated = [
+                synthesized_image.pil().convert("RGB"),
+                synthesized_image.rotate(90).convert("RGB"),
+                synthesized_image.rotate(180).convert("RGB"),
+                synthesized_image.rotate(270).convert("RGB"),
+            ]
+            synthesized_images_all_pil.extend(synthesized_images_rotated)
+            synthesized_images_all_features.extend([preprocessor(a) for a in synthesized_images_rotated])
+            real_images_all.extend([preprocessor(real_image.pil().convert("RGB")) for _ in range(4)])
+            
+        synthesized_images_all_features = torch.stack(synthesized_images_all_features).to(device)
+        real_images_all = torch.stack(real_images_all).to(device)
+        
+        assert real_images_all.shape == synthesized_images_all_features.shape
+        
+        save_index = 0
+        for i in range(0, synthesized_images_all_features.shape[0], 4):
+            real_image = real_images_all[i]
+            synthesized_images_rotated = synthesized_images_all_features[i : i + 4]
+            
+            if "inception" in args.feature_extractor:
+                real_features = feature_extractor(real_image.unsqueeze(0))
+                synthesized_features = feature_extractor(synthesized_images_rotated)
 
+            elif "clip" in args.feature_extractor:
+                real_features = feature_extractor.encode_image(real_image.unsqueeze(0))
+                synthesized_features = feature_extractor.encode_image(synthesized_images_rotated)
+            
+            feature_distances = torch.norm(real_features - synthesized_features, dim=1)
+            pixel_distances = torch.mean(torch.abs(synthesized_images_rotated - real_image.unsqueeze(0)), dim=[1, 2, 3])
+            
+            score = feature_distances * pixel_distances
+            
+            min_distance_index = torch.argmin(score)
+            min_distance_image = synthesized_images_all_pil[i + min_distance_index]
+            min_distance_image.save(f"{path_to_test_fake}/{save_index:05d}.png")
+            
+            save_index += 1
+            
+    else:
+        for sii, synthesized_image in enumerate(synthesized_images):
+            synthesized_image.pil().save(f"{path_to_test_fake}/{sii:05d}.png")
+        
     # Compute the FID score
-    fid_score = fid.compute_fid(path_to_test_real, path_to_test_fake, device=torch.device("cpu"))
+    fid_score = fid.compute_fid(path_to_test_real, path_to_test_fake, device=device, model_name=args.feature_extractor)
     print('fid score:', fid_score)
     # kid_score = fid.compute_kid(path_to_test_real, path_to_test_fake, device=torch.device("cpu"))
-    # print('kid score:', kid_score)
-    os.system('rm -r %s'%path_to_test_real)
-    os.system('rm -r %s'%path_to_test_fake)
+    # print('kid score:', kid_score)``
+    os.system(f'rm -r {base_path}')
 
 
 if __name__ == "__main__":
