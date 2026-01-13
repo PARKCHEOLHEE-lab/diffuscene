@@ -5,6 +5,7 @@ __pycache__
 ./output/
 pretrained
 CVPR2024_DiffuScene/
+CVPR2024*/
 build/
 *.egg
 *.out
