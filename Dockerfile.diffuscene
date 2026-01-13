@@ -4,7 +4,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --fix-missing \ 
+    && apt-get install -y --fix-missing \
     python3.9 \
     python3-pip \
     build-essential \
@@ -23,7 +24,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN python3 -m pip install --upgrade pip setuptools wheel
+RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir --upgrade importlib-metadata
 RUN pip install --no-cache-dir \
     torch==1.13.0+cu116 \
