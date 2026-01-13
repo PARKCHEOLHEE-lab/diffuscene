@@ -4,6 +4,8 @@ pip install -e . --config-settings editable_mode=compat
 cd ChamferDistancePytorch/chamfer3D
 python setup.py install
 
+cd ../../
+
 # download pretrained models and preprocessed datasets
 # https://drive.google.com/drive/folders/1EhvyNCAWWto6vMt0vXWMKBoSdYR_9pC2
 
@@ -23,7 +25,7 @@ apt-get update
 apt-get install -y unzip
 
 # construct directory structure
-BASE_DIR='./scripts/_cluster/'
+BASE_DIR='./scripts/cluster/'
 if [ ! -d "$BASE_DIR" ]; then
     mkdir "$BASE_DIR"
 fi
@@ -45,6 +47,6 @@ unzip objautoencoder_pretrained.zip
 unzip pretrained_diffusion.zip 
 
 # construct directory structure
-PRETRAINED_DIR="_pretrained"
+PRETRAINED_DIR="pretrained"
 mv pretrained_diffusion $PRETRAINED_DIR
 mv objautoencoder_pretrained $PRETRAINED_DIR
