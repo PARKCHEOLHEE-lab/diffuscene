@@ -1,25 +1,14 @@
-#!/bin/bash
+#! /bin/bash
 
-pip install -e . --config-settings editable_mode=compat
-cd ChamferDistancePytorch/chamfer3D
-python setup.py install
+# Check if all required zip files exist before continuing
+ZIP_FILES=("3d_front_processed.zip" "3D-FUTURE-model-processed.zip" "objautoencoder_pretrained.zip" "pretrained_diffusion.zip")
 
-cd ../../
-
-# download pretrained models and preprocessed datasets
-# https://drive.google.com/drive/folders/1EhvyNCAWWto6vMt0vXWMKBoSdYR_9pC2
-
-# 3d_front_processed.zip
-gdown 1UNSFN0kULyOzUErDPVvkKYbmfzA-4MsG
-
-# objautoencoder_pretrained.zip
-gdown 1xuFa_Hh6BOZqfaAnlG-W_9mA1gilU6nI
-
-# pretrained_diffusion.zip
-gdown 1pk9AzGcBz_kRfmRzvFNDW5byk4MwbXEm
-
-# 3D-FUTURE-model-processed.zip
-gdown 16fz81Eh6B6pbZNGTMbe0FdfNwIuQicE1
+for ZF in "${ZIP_FILES[@]}"; do
+    if [ ! -f "$ZF" ]; then
+        echo "Error: Missing required file: $ZF"
+        exit 1
+    fi
+done
 
 apt-get update
 apt-get install -y unzip
