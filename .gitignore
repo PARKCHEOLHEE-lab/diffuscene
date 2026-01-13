@@ -11,6 +11,7 @@ build/
 *.out
 *.log
 *.zip
+*.part
 
 cluster/
 3d_front_processed/
