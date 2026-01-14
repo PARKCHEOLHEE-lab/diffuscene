@@ -212,15 +212,13 @@ def main(argv):
         )
 
         synthesized_images_all_pil = [im for group in synthesized_images_all_pil for im in group]
-        synthesized_images_all_features = [preprocessor(im) for im in synthesized_images_all_pil]
         
         real_images_all_pil = [real_image.pil().convert("RGB") for real_image in test_real_dataset for _ in range(4)]
-        real_images_all_features = [preprocessor(real_image) for real_image in real_images_all_pil]
         
-        assert len(real_images_all_features) == len(synthesized_images_all_features)
+        assert len(real_images_all_pil) == len(synthesized_images_all_pil)
         
         save_index = 0
-        for i in tqdm(range(0, len(synthesized_images_all_features), 4), total=len(synthesized_images_all_features) // 4):
+        for i in tqdm(range(0, len(synthesized_images_all_pil), 4), total=len(synthesized_images_all_pil) // 4):
                         
             real_image_basename = os.path.basename(test_real_dataset[i % 4].image_path).replace("_render", "")
             synthesized_image_basename = os.path.basename(synthesized_images[i % 4].image_path)
@@ -228,16 +226,18 @@ def main(argv):
             # check if the basename is the same
             assert real_image_basename == synthesized_image_basename
 
-            real_image = real_images_all_features[i].to(device)
-            synthesized_images_rotated = synthesized_images_all_features[i : i + 4].to(device)
+            real_image = preprocessor(real_images_all_pil[i]).to(device)
+            synthesized_images_rotated = [preprocessor(im) for im in synthesized_images_all_pil[i : i + 4]]
+            synthesized_images_rotated = torch.stack(synthesized_images_rotated, dim=0).to(device)
             
-            if "inception" in args.feature_extractor:
-                real_features = feature_extractor(real_image.unsqueeze(0))
-                synthesized_features = feature_extractor(synthesized_images_rotated)
+            with torch.no_grad():
+                if "inception" in args.feature_extractor:
+                    real_features = feature_extractor(real_image.unsqueeze(0))
+                    synthesized_features = feature_extractor(synthesized_images_rotated)
 
-            elif "clip" in args.feature_extractor:
-                real_features = feature_extractor.encode_image(real_image.unsqueeze(0))
-                synthesized_features = feature_extractor.encode_image(synthesized_images_rotated)
+                elif "clip" in args.feature_extractor:
+                    real_features = feature_extractor.encode_image(real_image.unsqueeze(0))
+                    synthesized_features = feature_extractor.encode_image(synthesized_images_rotated)
             
             feature_distances = torch.norm(real_features - synthesized_features, dim=1)
             pixel_distances = torch.mean(torch.abs(synthesized_images_rotated - real_image.unsqueeze(0)), dim=[1, 2, 3])
