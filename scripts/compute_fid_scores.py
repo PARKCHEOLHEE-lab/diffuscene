@@ -229,8 +229,8 @@ def main(argv):
         save_index = 0
         for i in tqdm(range(0, len(synthesized_images_all_pil), 4), total=len(synthesized_images_all_pil) // 4):
                         
-            real_image_basename = os.path.basename(test_real_dataset[i % 4].image_path).replace("_render", "")
-            synthesized_image_basename = os.path.basename(synthesized_images[i % 4].image_path)
+            real_image_basename = os.path.basename(test_real_dataset[i // 4].image_path).replace("_render", "")
+            synthesized_image_basename = os.path.basename(synthesized_images[i // 4].image_path)
 
             # check if the basename is the same
             assert real_image_basename == synthesized_image_basename
