@@ -90,7 +90,7 @@ def main(argv):
         "--feature_extractor",
         default="clip",
         help="Choose the feature extractor to compute the FID score (clip or inception)"  
-    ),
+    )
     parser.add_argument(
         "--check_global_rotation",
         default="false",
