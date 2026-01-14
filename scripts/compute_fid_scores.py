@@ -25,11 +25,6 @@ from tqdm.contrib.concurrent import process_map
 
 from cleanfid import fid
 
-import shutil
-
-from scene_synthesis.datasets.splits_builder import CSVSplitsBuilder
-from scene_synthesis.datasets.threed_front import CachedThreedFront
-
 
 class ThreedFrontRenderDataset(object):
     def __init__(self, dataset):
@@ -95,42 +90,9 @@ def main(argv):
         "--check_global_rotation",
         default="false",
     )
-    # parser.add_argument(
-    #     "path_to_annotations",
-    #     help="Path to the folder containing the annotations"
-    # )
-    # parser.add_argument(
-    #     "path_to_train_stats",
-    #     help="Path to the train stats"
-    # )
-    # parser.add_argument(
-    #     "--compare_all",
-    #     action="store_true",
-    #     help="if compare all"
-    # )
-
+    
     args = parser.parse_args(argv)
 
-    # Create Real datasets
-    # config = dict(
-    #     train_stats=args.path_to_train_stats,
-    #     room_layout_size="256,256"
-    # )
-    
-    # splits_builder = CSVSplitsBuilder(args.path_to_annotations)
-    # if args.compare_all:
-    #     test_real = ThreedFrontRenderDataset(CachedThreedFront(
-    #         args.path_to_real_renderings,
-    #         config=config,
-    #         scene_ids=splits_builder.get_splits(["train", "val", "test"]),
-    #     ))
-    # else:
-    #     test_real = ThreedFrontRenderDataset(CachedThreedFront(
-    #         args.path_to_real_renderings,
-    #         config=config,
-    #         scene_ids=splits_builder.get_splits(["train", "val"]),
-    #     ))
-    
     assert args.check_global_rotation in ("true", "false")
     args.check_global_rotation = args.check_global_rotation == "true"
     
