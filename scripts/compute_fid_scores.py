@@ -170,19 +170,9 @@ def main(argv):
     # sort synthesized images by basename to match the groudtruth images order
     synthesized_images = sorted(synthesized_images, key=lambda x: os.path.basename(x.image_path))
     
-    for real, synthesized in zip(test_real_dataset, synthesized_images):
-
-        basename_real = os.path.basename(real.image_path).replace("_render", "")
-        basename_synthesized = os.path.basename(synthesized.image_path)
-        
-        # check if the basename is the same
-        assert basename_real == basename_synthesized
-        
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     if args.check_global_rotation:
-        
-        # feature_extractor = clip.load("ViT-B/32", device=device)
         
         if "inception" in args.feature_extractor:
             feature_extractor = inception_v3(weights=Inception_V3_Weights.DEFAULT)
@@ -217,7 +207,7 @@ def main(argv):
             synthesized_images_all_pil.extend(synthesized_images_rotated)
             synthesized_images_all_features.extend([preprocessor(a) for a in synthesized_images_rotated])
             real_images_all.extend([preprocessor(real_image.pil().convert("RGB")) for _ in range(4)])
-            
+
         synthesized_images_all_features = torch.stack(synthesized_images_all_features).to(device)
         real_images_all = torch.stack(real_images_all).to(device)
         
@@ -248,7 +238,13 @@ def main(argv):
             save_index += 1
             
     else:
-        for sii, synthesized_image in enumerate(synthesized_images):
+        for sii, (real_image, synthesized_image) in enumerate(zip(test_real_dataset, synthesized_images)):
+            basename_real = os.path.basename(real_image.image_path).replace("_render", "")
+            basename_synthesized = os.path.basename(synthesized_image.image_path)
+
+            # check if the basename is the same
+            assert basename_real == basename_synthesized
+
             synthesized_image.pil().save(f"{path_to_test_fake}/{sii:05d}.png")
         
     # Compute the FID score
