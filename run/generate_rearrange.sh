@@ -12,7 +12,8 @@ config="../config/rearrange/diffusion_bedrooms_instancond_lat32_v_rearrange.yaml
 exp_name="bedrooms_rearrange"
 weight_file=$exp_dir/$exp_name/model_17000
 threed_future='./cluster/balrog/jtang/3d_front_processed/threed_future_model_bedroom.pkl'
-output_dir=./cluster/balrog/jtang/rearrange_with_validation_data_$generation_times/$exp_name/gen_top2down_notexture_nofloor
+# output_dir=./cluster/balrog/jtang/rearrange_with_validation_data_$generation_times/$exp_name/gen_top2down_notexture_nofloor
+output_dir=./cluster/balrog/jtang/rearrange_with_train_val_data/$exp_name/gen_top2down_notexture_nofloor
 
 xvfb-run -a python completion_rearrange.py \
     $config \
@@ -29,7 +30,7 @@ xvfb-run -a python completion_rearrange.py \
     --retrive_objfeats \
     --arrange_objects \
     --compute_intersec \
-    --split='["val"]' \
+    --split='["train", "val"]' \
     --render_gt=true
 
 ####'livingrooms'
@@ -37,7 +38,8 @@ config="../config/rearrange/diffusion_livingrooms_instancond_lat32_v_rearrange.y
 exp_name="livingrooms_rearrange"
 weight_file=$exp_dir/$exp_name/model_81000
 threed_future='./cluster/balrog/jtang/3d_front_processed/threed_future_model_livingroom.pkl'
-output_dir=./cluster/balrog/jtang/rearrange_with_validation_data_$generation_times/$exp_name/gen_top2down_notexture_nofloor
+# output_dir=./cluster/balrog/jtang/rearrange_with_validation_data_$generation_times/$exp_name/gen_top2down_notexture_nofloor
+output_dir=./cluster/balrog/jtang/rearrange_with_train_val_data/$exp_name/gen_top2down_notexture_nofloor
 
 xvfb-run -a python completion_rearrange.py \
     $config \
@@ -54,5 +56,5 @@ xvfb-run -a python completion_rearrange.py \
     --retrive_objfeats \
     --arrange_objects \
     --compute_intersec \
-    --split='["val"]' \
+    --split='["train", "val"]' \
     --render_gt=true
