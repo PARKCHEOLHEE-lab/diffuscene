@@ -267,10 +267,6 @@ def main(argv):
             assert basename_real == basename_synthesized
 
             synthesized_image.pil().save(f"{path_to_test_fake}/{sii:05d}.png")
-            
-    torch.cuda.empty_cache()
-    del real_images_all_features
-    del synthesized_images_all_features
         
     # Compute the FID score
     fid_score = fid.compute_fid(path_to_test_real, path_to_test_fake, device=device, model_name=args.feature_extractor)
