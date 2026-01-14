@@ -156,10 +156,15 @@ def main(argv):
     
     if os.path.exists(base_path):
         path_index = 1
+        base_path = base_path + f"_{path_index}"
         while True:
-            base_path = base_path + f"_{path_index}"
+            
             if not os.path.exists(base_path):
                 break
+            
+            base_path = base_path.replace(f"_{path_index}", "")
+            path_index += 1
+            base_path = base_path + f"_{path_index}"
 
     path_to_test_real = os.path.join(base_path, "test_real") # /tmp/test_real
     if not os.path.exists(path_to_test_real):
