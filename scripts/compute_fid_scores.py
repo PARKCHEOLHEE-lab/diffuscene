@@ -155,7 +155,11 @@ def main(argv):
     base_path = "./cluster/balrog/jtang/ATISS_exps"
     
     if os.path.exists(base_path):
-        os.system(f"rm -r {base_path}")
+        path_index = 1
+        while True:
+            base_path = base_path + f"_{path_index}"
+            if not os.path.exists(base_path):
+                break
 
     path_to_test_real = os.path.join(base_path, "test_real") # /tmp/test_real
     if not os.path.exists(path_to_test_real):
