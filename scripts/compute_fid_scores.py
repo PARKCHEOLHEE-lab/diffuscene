@@ -13,6 +13,7 @@ import os
 import sys
 import torch
 import clip
+import multiprocessing
 
 from torchvision.models import inception_v3, Inception_V3_Weights
 from torchvision import transforms
@@ -20,6 +21,7 @@ from torchvision import transforms
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
+from tqdm.contrib.concurrent import process_map
 
 from cleanfid import fid
 
@@ -60,6 +62,14 @@ class DummyImage:
         image = Image.open(self.image_path)
         rotated = image.rotate(angle)
         return rotated
+
+def _rotate_multiprocessing(image: DummyImage):
+    return [
+        image.pil().convert("RGB"),
+        image.rotate(90).convert("RGB"),
+        image.rotate(180).convert("RGB"),
+        image.rotate(270).convert("RGB"),
+    ]
 
 
 def main(argv):
@@ -191,31 +201,36 @@ def main(argv):
             feature_extractor, preprocessor = clip.load("ViT-B/32", device=device)
             feature_extractor = feature_extractor.to(device)
             feature_extractor.eval()
-            
-        synthesized_images_all_features = []
-        synthesized_images_all_pil = []
-        real_images_all = []
-        for real_image, synthesized_image in tqdm(
-            zip(test_real_dataset, synthesized_images), total=len(test_real_dataset)
-        ):
-            synthesized_images_rotated = [
-                synthesized_image.pil().convert("RGB"),
-                synthesized_image.rotate(90).convert("RGB"),
-                synthesized_image.rotate(180).convert("RGB"),
-                synthesized_image.rotate(270).convert("RGB"),
-            ]
-            synthesized_images_all_pil.extend(synthesized_images_rotated)
-            synthesized_images_all_features.extend([preprocessor(a) for a in synthesized_images_rotated])
-            real_images_all.extend([preprocessor(real_image.pil().convert("RGB")) for _ in range(4)])
-
-        synthesized_images_all_features = torch.stack(synthesized_images_all_features).to(device)
-        real_images_all = torch.stack(real_images_all).to(device)
         
-        assert real_images_all.shape == synthesized_images_all_features.shape
+        # multiprocessing
+        synthesized_images_all_pil = process_map(
+            _rotate_multiprocessing, 
+            synthesized_images, 
+            max_workers=multiprocessing.cpu_count(), 
+            chunksize=32,
+        )
+
+        synthesized_images_all_pil = [im for group in synthesized_images_all_pil for im in group]
+        synthesized_images_all_features = [preprocessor(im) for im in synthesized_images_all_pil]
+        
+        real_images_all_pil = [real_image.pil().convert("RGB") for real_image in test_real_dataset for _ in range(4)]
+        real_images_all_features = [preprocessor(real_image) for real_image in real_images_all_pil]
+            
+        synthesized_images_all_features = torch.stack(synthesized_images_all_features).to(device)
+        real_images_all_features = torch.stack(real_images_all_features).to(device)
+        
+        assert real_images_all_features.shape == synthesized_images_all_features.shape
         
         save_index = 0
-        for i in range(0, synthesized_images_all_features.shape[0], 4):
-            real_image = real_images_all[i]
+        for i in tqdm(range(0, synthesized_images_all_features.shape[0], 4), total=synthesized_images_all_features.shape[0] // 4):
+            
+            real_image_basename = os.path.basename(test_real_dataset[i % 4].image_path).replace("_render", "")
+            synthesized_image_basename = os.path.basename(synthesized_images[i % 4].image_path)
+
+            # check if the basename is the same
+            assert real_image_basename == synthesized_image_basename
+
+            real_image = real_images_all_features[i]
             synthesized_images_rotated = synthesized_images_all_features[i : i + 4]
             
             if "inception" in args.feature_extractor:
