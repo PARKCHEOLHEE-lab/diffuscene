@@ -63,6 +63,7 @@ class DummyImage:
         rotated = image.rotate(angle)
         return rotated
 
+
 def _rotate_multiprocessing(image: DummyImage):
     return [
         image.pil().convert("RGB"),
@@ -71,7 +72,7 @@ def _rotate_multiprocessing(image: DummyImage):
         image.rotate(270).convert("RGB"),
     ]
 
-
+    
 def main(argv):
     parser = argparse.ArgumentParser(
         description=("Compute the FID scores between the real and the "
@@ -196,7 +197,7 @@ def main(argv):
                     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),  # ImageNet normalization
                 ]
             )
-        
+            
         elif "clip" in args.feature_extractor:
             feature_extractor, preprocessor = clip.load("ViT-B/32", device=device)
             feature_extractor = feature_extractor.to(device)
@@ -215,23 +216,20 @@ def main(argv):
         
         real_images_all_pil = [real_image.pil().convert("RGB") for real_image in test_real_dataset for _ in range(4)]
         real_images_all_features = [preprocessor(real_image) for real_image in real_images_all_pil]
-            
-        synthesized_images_all_features = torch.stack(synthesized_images_all_features).to(device)
-        real_images_all_features = torch.stack(real_images_all_features).to(device)
         
-        assert real_images_all_features.shape == synthesized_images_all_features.shape
+        assert len(real_images_all_features) == len(synthesized_images_all_features)
         
         save_index = 0
-        for i in tqdm(range(0, synthesized_images_all_features.shape[0], 4), total=synthesized_images_all_features.shape[0] // 4):
-            
+        for i in tqdm(range(0, len(synthesized_images_all_features), 4), total=len(synthesized_images_all_features) // 4):
+                        
             real_image_basename = os.path.basename(test_real_dataset[i % 4].image_path).replace("_render", "")
             synthesized_image_basename = os.path.basename(synthesized_images[i % 4].image_path)
 
             # check if the basename is the same
             assert real_image_basename == synthesized_image_basename
 
-            real_image = real_images_all_features[i]
-            synthesized_images_rotated = synthesized_images_all_features[i : i + 4]
+            real_image = real_images_all_features[i].to(device)
+            synthesized_images_rotated = synthesized_images_all_features[i : i + 4].to(device)
             
             if "inception" in args.feature_extractor:
                 real_features = feature_extractor(real_image.unsqueeze(0))
@@ -252,6 +250,10 @@ def main(argv):
             
             save_index += 1
             
+            torch.cuda.empty_cache()
+            del real_image
+            del synthesized_images_rotated
+            
     else:
         for sii, (real_image, synthesized_image) in enumerate(zip(test_real_dataset, synthesized_images)):
             basename_real = os.path.basename(real_image.image_path).replace("_render", "")
@@ -261,6 +263,10 @@ def main(argv):
             assert basename_real == basename_synthesized
 
             synthesized_image.pil().save(f"{path_to_test_fake}/{sii:05d}.png")
+            
+    torch.cuda.empty_cache()
+    del real_images_all_features
+    del synthesized_images_all_features
         
     # Compute the FID score
     fid_score = fid.compute_fid(path_to_test_real, path_to_test_fake, device=device, model_name=args.feature_extractor)
