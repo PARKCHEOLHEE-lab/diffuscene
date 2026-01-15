@@ -22,6 +22,18 @@ To set up the DiffuScene environment in Vessl, set the Custom Image to `docker.i
 
 <br>
 
+### Clone the Repository
+
+To get started with DiffuScene, first clone this repository:
+This will create a folder named `KOCCA-SceneRearrange` with all necessary source code and scripts.
+
+```bash
+git clone https://github.com/KAIST-VML/KOCCA-SceneRearrange.git
+cd KOCCA-SceneRearrange
+```
+
+<br>
+
 
 ## Set Up Preprocessed Data & Pretrained Models
 
