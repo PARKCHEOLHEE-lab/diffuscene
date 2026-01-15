@@ -9,7 +9,7 @@
 
 ## Installation
 
-### For Vessl
+### Vessl Environment Setup
 To set up the DiffuScene environment in Vessl, set the Custom Image to `docker.io/cjfl2343/diffuscene:0.0.7`. This image was made for this project and has all the required packages already installed. The Docker image comes from the [`Dockerfile.diffuscene`](Dockerfile.diffuscene) file in this repository.
 **Since this image uses CUDA 11.6, it is recommended to use a node with CUDA version 11.x or higher** (e.g., `eve-s05`, `character-s05`).
 
@@ -22,7 +22,7 @@ To set up the DiffuScene environment in Vessl, set the Custom Image to `docker.i
 
 <br>
 
-### Cloning Repository
+### Repository Setup
 
 To get started with DiffuScene, first clone this repository:
 This will create a folder named `KOCCA-SceneRearrange` with all necessary source code and scripts.
@@ -41,7 +41,7 @@ To set up the prepared data and pre-trained models, run these scripts in order:
 
 1. Install extra Python packages and Chamfer Distance:
 
-   ```
+   ```bash
    bash setup_a.sh
    ```
 
@@ -49,7 +49,7 @@ To set up the prepared data and pre-trained models, run these scripts in order:
 
 2. Download all required zip files (preprocessed datasets and pretrained models). **If download fails, follow the provided message to manually download and place the zip file in the project root**:
 
-   ```
+   ```bash
    bash setup_b.sh
    ```
 
@@ -57,7 +57,7 @@ To set up the prepared data and pre-trained models, run these scripts in order:
 
 3. Unzip and organize the files into the proper directories. **Before running this step, ensure that the following zip files** (`3d_front_processed.zip`, `3D-FUTURE-model-processed.zip`, `objautoencoder_pretrained.zip`, `pretrained_diffusion.zip`) are present in the root directory.
 
-   ```
+   ```bash
    bash setup_c.sh
    ```
 
@@ -68,11 +68,15 @@ To set up the prepared data and pre-trained models, run these scripts in order:
 
 The `generate_rearrange.sh` script creates rearranged scenes using pretrained diffusion models. It works on both bedrooms and living rooms from the training and validation parts of the 3D-FRONT dataset.
 
-To generate rearranged scenes, run:
+To generate rearranged scenes, run the command below:
 
 ```bash
 bash run/generate_rearrange.sh
 ```
+
+Outputs are saved to `./scripts/cluster/balrog/jtang/rearrange_with_train_val_data/{ROOM_TYPE}_rearrange/gen_top2down_notexture_nofloor/`.
+
+<br>
 
 The script does the following:
 - Creates rearranged scenes for bedrooms using the pretrained model checkpoint `model_17000`
@@ -95,8 +99,7 @@ For each room type, the script generates:
 
 <br>
 
-Outputs are saved to `./cluster/balrog/jtang/rearrange_with_train_val_data/{ROOM_TYPE}_rearrange/gen_top2down_notexture_nofloor/`.
-
+To generate scenes using specific dataset splits such as test or validation, change the `--split` argument in the `generate_rearrange.sh` to the `'["test", "val"]'`. Currently, the default is `'["train", "val"]'`.
 
 
 <br>
