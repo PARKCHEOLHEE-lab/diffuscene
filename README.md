@@ -72,6 +72,14 @@ For each room type, the script generates:
 - 3D mesh files of the generated scenes
 - Ground-truth images for comparison
 
+<div align="center" display="flex">
+    <img src="./media/noisy.png" width="31%"/>
+    <img src="./media/rearranged.png" width="31%"/>
+    <img src="./media/groundtruth.png" width="31%"/>
+    <br>
+    <i>From the left, noisy scene · rearranged scene · groundtruth scene</i>
+</div>
+
 <br>
 
 Outputs are saved to `./cluster/balrog/jtang/rearrange_with_train_val_data/{ROOM_TYPE}_rearrange/gen_top2down_notexture_nofloor/`.
